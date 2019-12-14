@@ -1,0 +1,14 @@
+{
+  "name": "nodekey",
+  "version": "1.0.0",
+  "description": "Logs keystrokes.",
+  "main": "nodekey.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "Ashwin,Monish",
+  "license": "ISC",
+  "dependencies": {
+    "iohook": "^0.6.2"
+  }
+}
