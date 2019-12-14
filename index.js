@@ -29,6 +29,20 @@ app.post('/', function(req,res) {
     }
 })
 
+app.post('/delete', function(req,res) {
+    if(req.body.password == config.password) {
+        fs.unlink(config.dir + '/data.log', (err) => {
+            if(err) {
+                return res.status(400).send({ message: err.toString() })
+            };
+            return res.status(200).send({ message: "Deleted Successfully" });
+        })
+    }
+    else {
+        return res.status(401).send({ message: 'Failed to authenticate password' })
+    }
+})
+
 function interpret(event) {
 
     if (event.rawcode == 20) {
