@@ -2,6 +2,7 @@ const iohook = require('iohook');
 const express = require('express');
 const config = require('./config');
 const fs = require('fs');
+const path = require('path');
 
 const app = express();
 
@@ -13,7 +14,18 @@ fs.appendFile(config.dir + '/data.log', '\n', function (err) {
 
 let toggle = false;
 
+app.use(express.static('dist'));
 app.use(express.json());
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,Authorization");
+    next();
+  });
+  
+app.get('/', function(req, res, next) {
+    res.sendFile(path.join(__dirname, './dist/index.html'));
+});
+
 
 app.post('/', function(req,res) {
     if(req.body.password == config.password) {
