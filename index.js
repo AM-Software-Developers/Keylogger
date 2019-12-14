@@ -6,7 +6,7 @@ const path = require('path');
 const app = express();
 
 const Keymap = config.Keymap;
-const SpecialCharacter =
+const SpecialCharacter = config.SpecialCharacter;
     fs.appendFile(config.dir + '/data.log', '\n' + ((Date()).toString()) + '\n', function (err) {
         if (err) throw err;
     });
