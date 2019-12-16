@@ -6,7 +6,7 @@ const path = require('path');
 const app = express();
 
 const Keymap = config.Keymap;
-const SpecialCharacter =
+const SpecialCharacter = config.SpecialCharacter;
     fs.appendFile(config.dir + '/data.log', '\n' + ((Date()).toString()) + '\n', function (err) {
         if (err) throw err;
     });
@@ -95,4 +95,4 @@ iohook.on('keydown', interpret);
 iohook.start();
 
 const port = process.env.PORT || 4000;
-app.listen(port, () => console.log(`Listening to port ${port}...`));
+app.listen(port, () => console.log(`Listening to port ${port}...\nvisit http://localhost:${port} in the browser to view the contents of the log file`));
