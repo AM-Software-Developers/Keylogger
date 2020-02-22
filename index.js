@@ -1,55 +1,68 @@
 const iohook = require('iohook');
 const express = require('express');
+const bodyParser = require('body-parser');
 const config = require('./config');
+const AccessControl = require('accesscontrol');
+const ac = new AccessControl(config.grants);
 const fs = require('fs');
 const path = require('path');
 const app = express();
+const errorHandler = require('./_helpers/error-handler');
+const verifyToken = require('./users/verifyToken');
+
 
 const Keymap = config.Keymap;
 const SpecialCharacter = config.SpecialCharacter;
-    fs.appendFile(config.dir + '/data.log', '\n' + ((Date()).toString()) + '\n', function (err) {
-        if (err) throw err;
-    });
+fs.appendFile(config.dir + '/data.log', '\n' + ((Date()).toString()) + '\n', function (err) {
+    if (err) throw err;
+});
+ac.grant('superuser').extend('admin');
 
 let toggle = false;
 
 app.use(express.static('dist'));
-app.use(express.json());
+app.use(bodyParser.json());
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept,Authorization");
     next();
 });
+app.use('/users', require('./users/users.controller'));
+app.use(errorHandler);
 
 app.get('/', function (req, res, next) {
     res.sendFile(path.join(__dirname, './dist/index.html'));
 });
 
-app.post('/', function (req, res) {
-    if (req.body.password == config.password) {
-        fs.readFile(config.dir + '/data.log', (err, data) => {
-            if (err) {
-                return res.status(400).send({ message: err.toString() })
-            };
-            return res.status(200).send({ message: data.toString() });
-        })
+app.post('/', verifyToken, function (req, res) {
+    const permission = ac.can(req.roles).readAny('data');
+    if(permission.granted) {
+            fs.readFile(config.dir + '/data.log', (err, data) => {
+                if (err) {
+                    return res.status(400).send({ message: err.toString() });
+                };
+                return res.status(200).send({ message: data.toString() });
+            })
+        
     }
     else {
-        return res.status(401).send({ message: 'Failed to authenticate password' })
+        return res.status(403).send({message: 'Access Denied!' });
     }
 })
 
-app.post('/delete', function (req, res) {
-    if (req.body.password == config.password) {
-        fs.unlink(config.dir + '/data.log', (err) => {
-            if (err) {
-                return res.status(400).send({ message: err.toString() })
-            };
-            return res.status(200).send({ message: "Deleted Successfully" });
-        })
+app.post('/delete', verifyToken, function (req, res) {
+    const permission = ac.can(req.roles).deleteAny('data');
+    if(permission.granted) {
+            fs.unlink(config.dir + '/data.log', (err) => {
+                if (err) {
+                    return res.status(400).send({ message: err.toString() })
+                };
+                return res.status(200).send({ message: "Deleted Successfully" });
+            })
+        
     }
     else {
-        return res.status(401).send({ message: 'Failed to authenticate password' })
+        return res.status(403).send({message: 'Access Denied!' });
     }
 })
 
