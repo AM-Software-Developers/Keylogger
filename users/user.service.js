@@ -32,7 +32,6 @@ async function check(req) {
     if (!token || !token.split(' ')[1])
         throw new Error('No token provided');
     var decoded = await jwt.verify(token.split(' ')[1], config.secret);
-    console.log(decoded);
     req.userId = decoded.id;
     req.roles = decoded.role;
     
